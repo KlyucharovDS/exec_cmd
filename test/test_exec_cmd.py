@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 import time
 
 import pytest
@@ -36,12 +37,23 @@ def init():
     yield
 
 
+@pytest.fixture()
+def add_files2input():
+    for i in range(1, 7):
+        shutil.copy(f'pattern/{i}', 'input')
+
+
+@pytest.fixture()
+def clear_output_dir():
+    remove('output')
+
+
 @pytest.mark.skip()
 def test_exec_cmd():
     pass
 
 
-def test_simple_log(init):
+def test_simple_log(init, add_files2input):
     log_file_name = 'log/log_file_name.txt'
     log_file = exec_cmd.LogFile(cmd='ls', log_file=os.path.abspath(log_file_name))
     list_dir_log = os.listdir('log')
@@ -85,27 +97,40 @@ def test_add_data2exist_log():
     add_message = f'\n\n------------------\nadding message'
     full_add_message = f'\n-----------------------------------------------------------\nLogging command \"{cmd}\"{time_date} \n-----------------------------------------------------------\n' + add_message
     exp_val = open(os.path.join(log_dir, log_file_name), 'r').read() + full_add_message
-    print(exp_val)
     log_file = exec_cmd.LogFile(cmd=cmd, log_file=os.path.abspath(log_dir))
     log_file.write2log(add_message)
     log_file.close()
     log_file = open(os.path.join(log_dir, log_file_name), 'r')
     assert log_file.read() == exp_val
 
+
 def test_error_create_log():
-    log_dir='/home/fake_log_dir/fake_log_name.log'
+    log_dir = '/home/fake_log_dir/fake_log_name.log'
     cmd = 'df -h'
     log_file = exec_cmd.LogFile(cmd=cmd, log_file=os.path.abspath(log_dir))
 
 
-@pytest.mark.skip()
-def test_add_text2log(test_simple_log):
-    pass
+def test_one_cmd():
+    assert [] == os.listdir('output')
+    exit_code = exec_cmd.exec_cmd('cp -v input/1 output')
+    assert ['1'] == os.listdir('output')
+    assert 0 == exit_code
 
 
-@pytest.mark.skip()
-def test_test(init):
-    assert 42 == 42
+def test_any_cmd(clear_output_dir):
+    assert [] == os.listdir('output')
+    exit_code = exec_cmd.exec_cmd(['cp -v input/1 output', 'rsync -aP input/2 output/', 'ls -l'])
+    assert ['2', '1'] == os.listdir('output')
+    assert 0 == exit_code
+
+
+def test_any_cmd(clear_output_dir):
+    assert [] == os.listdir('output')
+    exit_code = exec_cmd.exec_cmd(['cp -v input/1 output', 'rsync -aP input/ output/', 'ls -l'], 'log')
+    listdir = os.listdir('output')
+    listdir.sort()
+    assert ['1', '2', '3', '4', '5', '6'] == listdir
+    assert 0 == exit_code
 
 
 if __name__ == '__main__':

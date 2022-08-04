@@ -6,6 +6,7 @@ import time
 
 class LogFile:
     def __init__(self, *, cmd: str, log_file: str):
+        self.cmd = cmd
         self.file = None
         if log_file != '' and log_file is not None:
             time_date = time.strftime("\n\tDate: %Y-%m-%d \tTime: %H:%M:%S")
@@ -20,7 +21,7 @@ class LogFile:
                 else:
                     self.file = open(log_file, 'wb')
                 self.print2log("\n-----------------------------------------------------------")
-                self.print2log(f"\nLogging command \"{cmd}\"{time_date} ")
+                self.print2log(f"\nLogging command \"{self.cmd}\"{time_date} ")
                 self.print2log("\n-----------------------------------------------------------")
                 self.print2log("\n")
             else:
@@ -49,22 +50,26 @@ class LogFile:
 log_file = None
 
 
-def exec_cmd(cmd: (str, list), filename=None):
+def exec_cmd(cmd: (str, list), log_filename=None):
     global log_file
     if cmd is None or cmd == '':
         print('ERROR command empty!')
+        return 1
     else:
         if isinstance(cmd, list):
+            exit_code = 0
             for cmd_str in cmd:
-                log_file = LogFile(cmd=cmd_str, log_file=filename)
-                exec_cmd(cmd_str, filename)
+                exit_code |= exec_cmd(cmd_str, log_filename)
+            return exit_code
         elif isinstance(cmd, str):
+            log_file = LogFile(cmd=cmd, log_file=log_filename)
             rsyncproc = subprocess.Popen(cmd,
                                          shell=True,
                                          stdin=subprocess.PIPE,
                                          stdout=subprocess.PIPE,
                                          )
             # read cmd output and print to console
+            log_file.print(f'\n\t{cmd}:\n')
             while True:
                 next_line = rsyncproc.stdout.readline().decode("utf-8")
                 if not next_line:
@@ -79,6 +84,9 @@ def exec_cmd(cmd: (str, list), filename=None):
                 log_file.print2log("WARNING: looks like some error occured")
             log_file.print2log("\n")
             log_file.close()
+            return exitcode
+        return 1
+
 
 
 # ------------------------------------------------------
