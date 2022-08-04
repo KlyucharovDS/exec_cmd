@@ -132,6 +132,12 @@ def test_any_cmd(clear_output_dir):
     assert ['1', '2', '3', '4', '5', '6'] == listdir
     assert 0 == exit_code
 
+def test_any_cmd_create_logfile(clear_output_dir):
+    assert [] == os.listdir('output')
+    exit_code = exec_cmd.exec_cmd(['cp -v input/1 output', 'rsync -aP input/ output/', 'ls -l'], 'log/test_cmd.txt')
+    listdir = os.listdir('output')
+    listdir.sort()
+    assert ['1', '2', '3', '4', '5', '6'] == listdir
+    assert 0 == exit_code
 
-if __name__ == '__main__':
-    pass
+

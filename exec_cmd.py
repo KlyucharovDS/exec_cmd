@@ -87,17 +87,3 @@ def exec_cmd(cmd: (str, list), log_filename=None):
             return exitcode
         return 1
 
-
-
-# ------------------------------------------------------
-# Main program
-# @todo create test!
-if __name__ == '__main__':
-    cmds = [
-        "ls result",
-        'rm  result/*',
-        "ls result",
-        'rsync -aP test_C result',
-        'ls result',
-    ]
-    exec_cmd(cmds)
