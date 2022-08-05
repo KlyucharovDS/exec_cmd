@@ -48,10 +48,7 @@ class LogFile:
         if self.file:
             self.file.close()
 
-
 log_file = None
-
-
 def exec_cmd(cmd: (str, list), log_filename=None):
     time_start=time.time()
     global log_file
