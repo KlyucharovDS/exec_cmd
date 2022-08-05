@@ -29,12 +29,14 @@ class LogFile:
                 print(f'\tERROR!!! Path {os.path.dirname(log_file)} do not exist')
                 print('----------------------------------------------------------------------------')
 
-    def print(self,s:str):
+    @staticmethod
+    def print(s: str):
         s = '\t' + s
         sys.stdout.buffer.write(bytes(s, "utf-8"))
         sys.stdout.flush()
 
-    def write2log(self,s:str):
+    def write2log(self, s: str):
+        # self.file.write(bytes(s, "utf-8"))
         if self.file and (s.find('\r') == -1):
             self.file.write(bytes(s, "utf-8"))
 
@@ -51,6 +53,7 @@ log_file = None
 
 
 def exec_cmd(cmd: (str, list), log_filename=None):
+    time_start=time.time()
     global log_file
     if cmd is None or cmd == '':
         print('ERROR command empty!')
@@ -75,6 +78,7 @@ def exec_cmd(cmd: (str, list), log_filename=None):
                 if not next_line:
                     break
                 log_file.print2log(f"\t{next_line}")
+            log_file.print2log(f'"{cmd}" take a {time.time() - time_start} seconds\n')
             # wait until process is really terminated
             exitcode = rsyncproc.wait()
             # check exit code
@@ -86,4 +90,3 @@ def exec_cmd(cmd: (str, list), log_filename=None):
             log_file.close()
             return exitcode
         return 1
-
